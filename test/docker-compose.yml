@@ -1,21 +1,21 @@
 version: "3.9"
 
 services:
-  authorservice:
-    image: authorservice:local
+  tests:
+    image: authorservice-test
     build:
-      context: .
+      context: ..
+      dockerfile: test/Dockerfile
     environment:
-      APP_DATABASE_HOST: authordb
+      APP_DATABASE_HOST: testdb
       APP_DATABASE_PASSWORD: 1234
       APP_DATABASE_DBNAME: postgres
-    ports:
-    - "8080:8080"
+      GIN_MODE: debug
     depends_on:
-      authordb:
-        condition: service_healthy
+      testdb:
+          condition: service_healthy
 
-  authordb:
+  testdb:
     image: postgres:14.5-alpine3.16
     environment:
       POSTGRES_PASSWORD: 1234
@@ -24,8 +24,6 @@ services:
       target: /docker-entrypoint-initdb.d/schema.sql
     volumes:
     - postgres-data:/var/lib/postgresql/data
-    ports:
-    - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -34,7 +32,7 @@ services:
 
 configs:
   postgres-schema:
-    file: sql/schema.sql
+    file: ../sql/schema.sql
 
 volumes:
   postgres-data:

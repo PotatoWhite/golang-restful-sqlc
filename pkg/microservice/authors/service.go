@@ -19,10 +19,18 @@ type AuthorService interface {
 	Patch(ctx context.Context, cmd database.PartialUpdateAuthorParams) (*Author, error)
 	Delete(ctx context.Context, id int64) error
 	List(ctx context.Context) ([]*Author, error)
+	Truncate(ctx context.Context) error
 }
 
 type authorService struct {
 	queries *database.Queries
+}
+
+func (a *authorService) Truncate(ctx context.Context) error {
+	if err := a.queries.TruncateAuthor(ctx); err != nil {
+		return logging(fmt.Errorf("error truncating authors: %w", err))
+	}
+	return nil
 }
 
 func (a *authorService) Create(ctx context.Context, cmd database.CreateAuthorParams) (*Author, error) {
@@ -42,7 +50,7 @@ func logging(err error) error {
 func (a *authorService) Patch(ctx context.Context, cmd database.PartialUpdateAuthorParams) (*Author, error) {
 	author, err := a.queries.PartialUpdateAuthor(ctx, cmd)
 	if err != nil {
-		return nil, fmt.Errorf("error updating author: %w", err)
+		return nil, logging(fmt.Errorf("error updating author: %w", err))
 	}
 	return fromDB(author), nil
 }
@@ -50,7 +58,7 @@ func (a *authorService) Patch(ctx context.Context, cmd database.PartialUpdateAut
 func (a *authorService) Get(ctx context.Context, id int64) (*Author, error) {
 	author, err := a.queries.GetAuthor(ctx, id)
 	if err != nil {
-		return nil, err
+		return nil, logging(err)
 	}
 
 	return fromDB(author), nil
@@ -59,7 +67,7 @@ func (a *authorService) Get(ctx context.Context, id int64) (*Author, error) {
 func (a *authorService) Put(ctx context.Context, cmd database.UpdateAuthorParams) (*Author, error) {
 	author, err := a.queries.UpdateAuthor(ctx, cmd)
 	if err != nil {
-		return nil, fmt.Errorf("error updating author: %w", err)
+		return nil, logging(err)
 	}
 	return fromDB(author), nil
 }
@@ -67,7 +75,7 @@ func (a *authorService) Put(ctx context.Context, cmd database.UpdateAuthorParams
 func (a *authorService) Delete(ctx context.Context, id int64) error {
 	err := a.queries.DeleteAuthor(ctx, id)
 	if err != nil {
-		return fmt.Errorf("error deleting author: %w", err)
+		return logging(err)
 	}
 	return nil
 }
@@ -75,7 +83,7 @@ func (a *authorService) Delete(ctx context.Context, id int64) error {
 func (a *authorService) List(ctx context.Context) ([]*Author, error) {
 	authorList, err := a.queries.ListAuthors(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("error listing authors: %w", err)
+		return nil, logging(err)
 	}
 
 	var apiAuthors []*Author

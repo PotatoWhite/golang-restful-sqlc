@@ -39,7 +39,7 @@ func (h *authorHandler) Create(c *gin.Context) {
 	if author, err := h.service.Create(c, database.CreateAuthorParams{Name: req.Name, Bio: req.Bio}); err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	} else {
-		c.JSON(http.StatusCreated, gin.H{"data": author})
+		c.JSON(http.StatusCreated, author)
 	}
 }
 
@@ -60,7 +60,7 @@ func (h *authorHandler) Get(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": author})
+	c.JSON(http.StatusOK, author)
 }
 
 func (h *authorHandler) Put(c *gin.Context) {
@@ -76,10 +76,17 @@ func (h *authorHandler) Put(c *gin.Context) {
 		return
 	}
 
-	if author, err := h.service.Put(c, database.UpdateAuthorParams{ID: pathParams.ID, Name: req.Name, Bio: req.Bio}); err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	author, err := h.service.Put(c, database.UpdateAuthorParams{ID: pathParams.ID, Name: req.Name, Bio: req.Bio})
+	if err != nil {
+		// no row
+		if err == sql.ErrNoRows {
+			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		} else {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		return
 	} else {
-		c.JSON(http.StatusOK, gin.H{"data": author})
+		c.JSON(http.StatusOK, author)
 	}
 }
 
@@ -113,7 +120,7 @@ func (h *authorHandler) Patch(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": author})
+	c.JSON(http.StatusOK, author)
 }
 
 func (h *authorHandler) Delete(c *gin.Context) {
@@ -141,5 +148,5 @@ func (h *authorHandler) List(c *gin.Context) {
 		c.Status(http.StatusNoContent)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"data": authors})
+	c.JSON(http.StatusOK, authors)
 }
