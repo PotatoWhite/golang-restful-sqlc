@@ -7,5 +7,11 @@
 ## How to run
     
 ```shell
-go run cmd/main.go
+make run
+```
+
+## test
+    
+```shell
+make test
 ```
