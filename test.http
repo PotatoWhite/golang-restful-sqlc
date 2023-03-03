@@ -4,4 +4,33 @@ Content-Type: application/json
 {
   "name": "John Doe",
   "bio": "male"
-  }
+}
+
+###
+PUT localhost:8080/authors/1
+Content-Type: application/json
+
+{
+  "name": "Jane Doe",
+  "bio": "female"
+}
+
+###
+PATCH localhost:8080/authors/1
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "bio": "man"
+}
+
+###
+DELETE localhost:8080/authors/1
+
+###
+GET localhost:8080/authors
+Content-Type: application/json
+
+###
+GET localhost:8080/authors/1
+Content-Type: application/json

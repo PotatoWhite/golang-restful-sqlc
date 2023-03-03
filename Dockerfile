@@ -6,4 +6,15 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 # Copy the go source
-COPY main.go ./
+COPY cmd ./cmd
+COPY pkg ./pkg
+
+RUN CGO_ENABLED=0 go build -o service cmd/main.go
+
+FROM alpine:3.17.2
+WORKDIR /bin
+COPY --from=builder /work/service /bin/service
+ENV GIN_MODE=debug
+ENTRYPOINT ["/bin/service"]
+
+EXPOSE 8080
